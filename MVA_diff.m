@@ -1,18 +1,23 @@
 function [ E, V ] = MVA_diff( predictX, knownX, opt )
 %% toolkits of multivariate analysis
 %   for opt = 'PRESS' 
-%   calculate the predicted residual error sum of squares 
+%     calculate the predicted residual error sum of squares 
 %   for opt = 'RMSE'
-%   calculate the root mean square error
+%     calculate the root mean square error
 %   for opt = 'RSS'
-%   calculate the residual sum of squares
+%     calculate the residual sum of squares
 % refer to 
 %   Chemometrics: Data Analysis for the Laboratory and Chemical Plant.
 %   Richard G. Brereton
 %   Copyright (C) 2003 John Wiley & Sons, Ltd.
 %   ISBNs: 0-471-48977-8 (HB); 0-471-48978-6 (PB)
+%
 %   for opt = 'NRMSE'
-%   calculate the normalized RMSE
+%     calculate the normalized RMSE
+%   for opt = 'MRE'
+%	  calculate the averaged relative error for each predicted component
+%     two output arguments are theaveraged relative error for each
+%     predicted component, and their mean (default output)
 % refer to https://en.wikipedia.org/wiki/Root-mean-square_deviation
 %
 % by Guoqiang GUAN 2017/04/26 lvl-1
@@ -24,7 +29,6 @@ global wrkspace
 A = wrkspace.A;
 %   Initial values
 E = 0;
-V = zeros(A, 1);
 [I,J] = size(predictX);
 switch opt
     case 'PRESS'
@@ -43,7 +47,12 @@ switch opt
             end
         end
         E = sqrt(E/I/J)/(max(max(knownX))-min(min(knownX)));
-    case 'RSS'
+    case 'MRE'
+		V = zeros(1, size(knownX, 2));
+		RE = (knownX-predictX)./knownX;
+		V = mean(abs(RE));
+        E = mean(V);
+	case 'RSS'
         X = knownX;
         [T, ~] = MVA_pca(X, 'NIPALS');
         g = ones(A,1);
@@ -55,6 +64,7 @@ switch opt
                 E = X(i,j)^2+E;
             end
         end
+        V = zeros(A, 1);
         for a = 1:A
             V(a) = g(a)/E;
         end
