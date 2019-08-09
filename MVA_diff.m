@@ -19,12 +19,9 @@ function [ E, V ] = MVA_diff( predictX, knownX, opt )
 %                  2017/05/05 lvl-2
 %                  2017/08/08 add opt 'NRMSE'
 %
-global wrkspace
-%   get the principal component number from global variables
-A = wrkspace.A;
 %   Initial values
 E = 0;
-V = zeros(A, 1);
+%
 [I,J] = size(predictX);
 switch opt
     case 'PRESS'
@@ -44,6 +41,10 @@ switch opt
         end
         E = sqrt(E/I/J)/(max(max(knownX))-min(min(knownX)));
     case 'RSS'
+        global wrkspace
+        %   get the principal component number from global variables
+        A = wrkspace.A;
+        V = zeros(A, 1);
         X = knownX;
         [T, ~] = MVA_pca(X, 'NIPALS');
         g = ones(A,1);
